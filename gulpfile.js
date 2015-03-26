@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var browserSync = require('browser-sync');
 var browserify = require('browserify');
+var reactify = require('reactify');
 var transform = require('vinyl-transform');
 
 gulp.task('browser-sync', function() {
@@ -12,14 +13,20 @@ gulp.task('browser-sync', function() {
 });
 
 gulp.task('browserify', function() {
-  var browserified = transform(function(filename) {
-    var b = browserify(filename);
-    return b.bundle();
-  });
+  var bundler = browserify('./src/main.js')
+    .transform(reactify);
 
-  return gulp.src('./src/main.js')
-    .pipe(browserified)
-    .pipe(gulp.dest('./dist/js'));
+  var bundle = function() {
+    var b = transform(function(filename) {
+      return bundler.bundle();
+    });
+
+    return gulp.src('./src/main.js')
+      .pipe(b)
+      .pipe(gulp.dest('./dist/js'));
+  };
+
+  return bundle();
 });
 
 gulp.task('copy', function() {
